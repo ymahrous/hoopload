@@ -1,0 +1,57 @@
+{
+  "name": "hoopload",
+  "version": "1.0.0",
+  "private": true,
+  "description": "File uploads as a basketball game. Next.js full-stack: chunked, resumable, content-addressed uploads.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node server.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:component": "vitest run --project component",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:visual": "VISUAL=1 playwright test --project=desktop",
+    "test:load": "node tests/load/load-test.mjs",
+    "check": "npm run typecheck && npm run check:secrets && npm run test:coverage && npm run build && npm run check:secrets -- --bundle && npm run test:e2e",
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "start:next": "next start",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:deps": "npm audit --omit=dev && npm audit signatures"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.1",
+    "next": "^15.5.29",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.1",
+    "@electric-sql/pglite": "^0.6.0",
+    "@playwright/test": "^1.65.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^8.0.0",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.13",
+    "@types/node": "22.15.3",
+    "@types/react": "^19.3.3",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.1.2",
+    "fast-check": "^4.11.0",
+    "jsdom": "^31.0.1",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.2",
+    "vitest": "^5.1.2"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "overrides": {
+    "postcss": "^8.5.33"
+  }
+}
