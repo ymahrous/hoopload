@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    name: Secrets (full git history) · dependency audit · signatures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # gitleaks scans every commit, not just HEAD
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run check:secrets
+      - run: npm audit --omit=dev --audit-level=low
+      - run: npm audit signatures
+
+  verify:
+    name: Typecheck · unit · integration · component (coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: coverage, path: coverage/ }
+
+  e2e:
+    name: E2E · a11y · SEO · perf · load
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+        env: { NEXT_PUBLIC_SITE_URL: "http://localhost:3200" }
+      - name: No secrets in the client bundle
+        run: npm run check:secrets -- --bundle
+        env: { SESSION_SECRET: "${{ secrets.SESSION_SECRET || 'ci-only-session-secret-0123456789abcdef' }}" } # check-secrets: allow (CI dummy)
+      - run: npm run test:e2e
+      - name: Load test (SLO gate)
+        run: |
+          UPLOAD_DIR=.data-load PORT=3400 TRUST_PROXY_HOPS=1 SESSION_SECRET=ci-only-session-secret-0123456789abcdef node server.mjs & # check-secrets: allow (CI dummy)
+          for i in $(seq 30); do curl -sf http://localhost:3400/api/health && break; sleep 1; done
+          BASE_URL=http://localhost:3400 npm run test:load
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: playwright-report/ }
+
+  migrations:
+    name: Migrate Neon preview branch
+    runs-on: ubuntu-latest
+    needs: verify
+    # Runs only when a DATABASE_URL secret is configured (e.g. a Neon branch per PR).
+    if: ${{ github.event_name == 'push' && vars.HAS_NEON == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run db:migrate
+        env: { DATABASE_URL: "${{ secrets.DATABASE_URL }}" }
