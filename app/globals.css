@@ -254,14 +254,15 @@ button {
   position: absolute;
   left: 32px;
   right: 460px;
-  bottom: 28px;
+  /* Leaves room below the resting balls to pull back for a full-power shot. */
+  bottom: 120px;
   height: 1px;
 }
 
 .court-hint {
   position: absolute;
   left: 32px;
-  bottom: 6px;
+  bottom: 94px;
   z-index: 5;
   display: flex;
   gap: 10px;

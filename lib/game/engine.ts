@@ -73,6 +73,10 @@ const HALF_H = 34;
 const LABEL = 20;
 const RIM_R = 5;
 const MAX_PULL = 170;
+/** Shortest full-power pull, so aiming stays precise in very short windows. */
+const MIN_PULL = 80;
+/** Share of a full pull, straight down, that a make from the floor needs. */
+const MAKE_PULL = 0.8;
 const STEP = PHYSICS_STEP;
 const NET_COLS = 9;
 const NET_ROWS = 6;
@@ -99,6 +103,7 @@ export class HoopEngine {
   private floorL = 0;
   private floorR = 0;
   private power = 10;
+  private maxPull = MAX_PULL;
   private net: NetPoint[][] = [];
   private particles: Particle[] = [];
   private floaters: Array<{ x: number; y: number; t: number }> = [];
@@ -232,7 +237,11 @@ export class HoopEngine {
     this.floorR = f.right - s.left;
 
     const vNeed = Math.sqrt(2 * G * Math.max(200, this.groundY() - this.rimY + 220));
-    this.power = (vNeed * 1.3) / MAX_PULL;
+    // The pointer cannot travel past the bottom of the stage, so a full pull must
+    // fit in the room below a resting ball; otherwise shots can't reach the rim.
+    const room = this.H - this.groundY() - 6;
+    this.maxPull = Math.min(MAX_PULL, Math.max(MIN_PULL, room / MAKE_PULL));
+    this.power = (vNeed * 1.3) / this.maxPull;
 
     this.dpr = Math.min(2, window.devicePixelRatio || 1);
     for (const c of [this.back, this.front]) {
@@ -306,9 +315,9 @@ export class HoopEngine {
     let dx = p.x - b.aim.sx;
     let dy = p.y - b.aim.sy;
     const len = Math.hypot(dx, dy);
-    if (len > MAX_PULL) {
-      dx = (dx / len) * MAX_PULL;
-      dy = (dy / len) * MAX_PULL;
+    if (len > this.maxPull) {
+      dx = (dx / len) * this.maxPull;
+      dy = (dy / len) * this.maxPull;
     }
     b.aim.dx = dx;
     b.aim.dy = dy;
@@ -673,7 +682,7 @@ export class HoopEngine {
     fc.globalAlpha = 1;
   }
 
-  /** Dotted trajectory preview, simulated with the same gravity as the real shot. */
+  /** Dotted trajectory preview, integrated exactly like the real shot. */
   private drawGuide(b: Ball) {
     const fc = this.fctx;
     const { dx, dy } = b.aim!;
@@ -683,15 +692,15 @@ export class HoopEngine {
     let y = b.y;
     let vx = -dx * this.power;
     let vy = -dy * this.power;
-    const h = 1 / 60;
-    const strength = pull / MAX_PULL;
-    for (let i = 0; i < 80; i++) {
-      vy += G * h;
-      x += vx * h;
-      y += vy * h;
+    const strength = pull / this.maxPull;
+    const steps = 160; // 1.33 s at the physics rate
+    for (let i = 0; i < steps; i++) {
+      vy += G * STEP;
+      x += vx * STEP;
+      y += vy * STEP;
       if (y > this.groundY() + HALF_H || x < 0 || x > this.W) break;
-      if (i % 2 === 0) {
-        const fade = 1 - i / 80;
+      if (i % 4 === 0) {
+        const fade = 1 - i / steps;
         fc.fillStyle = `rgba(232, 85, 60, ${0.85 * fade})`;
         fc.beginPath();
         fc.arc(x, y, 1.4 + 1.8 * fade * (0.6 + strength * 0.4), 0, Math.PI * 2);
