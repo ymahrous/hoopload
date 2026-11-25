@@ -216,7 +216,6 @@ The full threat model, controls, limits table and operator checklist are in [SEC
 | Accessibility | axe-core | No WCAG 2.2 AA violations on every page, desktop and mobile; keyboard-only play; reduced motion |
 | SEO | Playwright | Head tags, canonical, OG/Twitter, one `h1`, JSON-LD types, robots, sitemap, `llms.txt`, OG image dimensions |
 | Performance | Playwright | LCP, CLS and JavaScript budgets |
-| Visual | Playwright snapshots | Court and FAQ page don't regress (`npm run test:visual`) |
 | Load | `tests/load/load-test.mjs` | Throughput and p95 latency SLOs under concurrent virtual users |
 
 ## Scaling out

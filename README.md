@@ -49,7 +49,7 @@ SESSION_SECRET="$(openssl rand -base64 48)" npm start   # node server.mjs
   - Secret scanning (including the client bundle), `npm audit`, and gitleaks in CI. See [SECURITY.md](SECURITY.md).
 - **Tested at every layer**
   - Unit, property-based, store contract (real Postgres via PGlite), integration, API contract and component tests.
-  - End-to-end, axe accessibility (WCAG 2.2 AA), SEO, Core Web Vitals, visual regression and load tests with SLO gates.
+  - End-to-end, axe accessibility (WCAG 2.2 AA), SEO, Core Web Vitals and load tests with SLO gates.
 
 ## Configuration
 
@@ -75,7 +75,6 @@ Using Neon: set `DATABASE_URL`, run `npm run db:migrate`, then start the app. Se
 | `npm test` | Unit, integration and component tests (Vitest) |
 | `npm run test:coverage` | The same, with enforced coverage thresholds |
 | `npm run test:e2e` | Playwright end-to-end, accessibility, SEO and performance on desktop and mobile (run `build` first) |
-| `npm run test:visual` | Screenshot regression |
 | `npm run test:load` | Load test with SLO gates (`BASE_URL=…`) |
 | `npm run db:migrate` | Apply migrations to `DATABASE_URL` |
 | `npm run check` | Everything CI runs |

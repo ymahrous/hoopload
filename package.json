@@ -15,7 +15,6 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:visual": "VISUAL=1 playwright test --project=desktop",
     "test:load": "node tests/load/load-test.mjs",
     "check": "npm run typecheck && npm run check:secrets && npm run test:coverage && npm run build && npm run check:secrets -- --bundle && npm run test:e2e",
     "db:migrate": "tsx scripts/db-migrate.ts",

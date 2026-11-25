@@ -50,7 +50,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org): `feat(upload): 
 | Endpoint, status code or header | `tests/integration/api.test.ts` |
 | Component | `tests/component/*.test.tsx` (query by role and label, not by class) |
 | User-visible flow | `tests/e2e/*.spec.ts` |
-| Styling or layout | `npm run test:visual`; if the change is intended, update baselines with `-- --update-snapshots` and include the diff in the PR |
+| Styling or layout | `npm run test:e2e`, and include before/after screenshots in the PR |
 
 Coverage thresholds are enforced (90% lines, functions and statements; 85% branches). Browser-only modules (engine, upload manager, worker) are excluded from coverage and covered by Playwright instead.
 

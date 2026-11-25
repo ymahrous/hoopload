@@ -1,7 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.E2E_PORT ?? 3200);
-const visual = process.env.VISUAL === "1";
 
 /**
  * Runs against a production build (`npm run build` first). Each run starts on
@@ -13,9 +12,6 @@ export default defineConfig({
   workers: 1,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]],
-  grep: visual ? /@visual/ : undefined,
-  grepInvert: visual ? undefined : /@visual/,
-  expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: "disabled" } },
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",

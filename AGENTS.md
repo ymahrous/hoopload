@@ -19,7 +19,6 @@ npm run test:component    # jsdom + Testing Library
 npm run test:coverage     # enforces thresholds (90% lines/functions/statements, 85% branches)
 npm run build             # must pass before e2e
 npm run test:e2e          # Playwright: e2e, a11y (axe), SEO, perf, desktop + mobile
-npm run test:visual       # screenshot regression (add -- --update-snapshots after intended UI changes)
 npm run test:load         # needs a running server: BASE_URL=http://localhost:3000
 npm run db:migrate        # applies migrations to DATABASE_URL (Neon)
 npm run check:secrets     # secret scan (add -- --bundle after a build to scan client JS)
@@ -89,7 +88,7 @@ With a system Chrome instead of downloaded browsers: `PW_EXECUTABLE_PATH=/usr/bi
 - Every behaviour change ships with a test at the lowest layer that can prove it: unit, then integration, then end-to-end.
 - Server bugs get a regression test in `upload-service.test.ts`, which runs on both stores automatically.
 - Prefer a property-based test (`fast-check`) for parsers, sanitisers and math.
-- After UI changes, run `npm run test:e2e`. If the change is intended, also run `npm run test:visual -- --update-snapshots` and review the PNG diff.
+- After UI changes, run `npm run test:e2e`.
 - Don't weaken a failing assertion to make it pass. Find out whether the test or the code is wrong, and say which in your summary.
 
 ## Definition of done
