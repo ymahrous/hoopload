@@ -11,7 +11,11 @@ export function singleton<T>(key: string, make: () => T): T {
 
 export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR ?? path.join(process.cwd(), ".data"));
 
+const HTTP_ERROR = Symbol.for("hoopload.HttpError");
+
 export class HttpError extends Error {
+  readonly [HTTP_ERROR] = true;
+
   constructor(
     public status: number,
     public code: string,
@@ -19,6 +23,17 @@ export class HttpError extends Error {
     public headers: Record<string, string> = {},
   ) {
     super(message);
+    this.name = "HttpError";
+  }
+
+  /**
+   * Next.js can bundle this module more than once (one copy per route), while
+   * services shared through `singleton()` keep the copy that created them. A
+   * plain prototype check would then miss errors thrown by another copy and
+   * turn a 4xx into a 500, so match on a registry-wide brand instead.
+   */
+  static [Symbol.hasInstance](value: unknown): boolean {
+    return typeof value === "object" && value !== null && (value as Record<symbol, unknown>)[HTTP_ERROR] === true;
   }
 }
 

@@ -1,7 +1,23 @@
-import { describe, expect, it } from "vitest";
-import { Mutex, json, readJson } from "@/lib/server/core";
+import { describe, expect, it, vi } from "vitest";
+import { HttpError, Mutex, json, readJson } from "@/lib/server/core";
 import { TtlLru } from "@/lib/server/lru";
 import { decodeCursor, encodeCursor } from "@/lib/server/store/types";
+
+describe("HttpError", () => {
+  it("is recognised across separately bundled copies of the module", async () => {
+    vi.resetModules();
+    const other = await import("@/lib/server/core");
+    expect(other.HttpError).not.toBe(HttpError);
+    const err = new other.HttpError(400, "empty_body", "Chunk body is required.");
+    expect(err instanceof HttpError).toBe(true);
+    expect(new HttpError(404, "x", "y") instanceof other.HttpError).toBe(true);
+  });
+
+  it("does not match plain errors", () => {
+    expect(new Error("nope") instanceof HttpError).toBe(false);
+    expect((null as unknown as object) instanceof HttpError).toBe(false);
+  });
+});
 
 describe("json()", () => {
   it("disables caching", () => {
